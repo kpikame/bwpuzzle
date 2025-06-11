@@ -4,6 +4,18 @@ import random
 
 app = Flask(__name__)
 
+
+@app.route('/api/submit_bug', methods=['POST'])
+def submit_bug():
+    data = request.json
+    bug_report = data.get('bug_report', '')
+
+    # 这里可以添加将bug_report保存到数据库或发送邮件的逻辑
+    # 例如：save_to_database(bug_report)
+
+    print(f"Received bug report: {bug_report}")  # 临时打印到控制台
+    return jsonify({'status': 'success', 'message': 'Bug报告已提交，感谢反馈！'})
+
 # 加载百闻牌卡牌数据
 def load_card_data():
     with open('card_data.json', 'r', encoding='utf-8') as f:

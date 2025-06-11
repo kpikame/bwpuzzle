@@ -469,6 +469,7 @@ button:hover {
 
 /* 模态框内容 */
 .modal2-content {
+    font-family: Arial, sans-serif;
     background-color: white;
     padding: 15px;
     border-radius: 8px;
@@ -605,4 +606,29 @@ button:hover {
 
 .restart-btn:hover {
     background: #0056b3;
+}
+
+/* 特定模态框的更高z-index */
+#bug-report-modal {
+    z-index: 1001; /* 确保bug-report-modal在其他模态框之上 */
+}
+/* BUG报告模态框样式 */
+#bug-report-modal .modal-content {
+    max-width: 500px;
+    width: 90%;
+    padding: 20px;
+}
+
+#bug-report-textarea {
+    width: 100%;
+    margin-top: 10px;
+    padding: 0px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    resize: vertical;
+}
+
+#bug-report-status {
+    margin-top: 10px;
+    font-weight: bold;
 }

@@ -69,9 +69,10 @@
             background: white;
             z-index: 1000;
             display: none;
-            margin-left: 118.5px;
+            margin-left: 9.3%;
             box-sizing: border-box;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 800;
         }
 
         .suggestion-item {
@@ -98,6 +99,19 @@
         <button onclick="showSettingsBox('settings3')">
             <img src="{{ url_for('static', filename='icons/开发人员.png') }}">
         </button>
+        </div>
+    </div>
+    <!-- BUG报告模态框 -->
+    <div id="bug-report-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('bug-report-modal')">&times;</span>
+            <h2>提交BUG报告</h2>
+            <textarea id="bug-report-textarea" rows="8" cols="50" placeholder="请详细描述您遇到的问题...（卡牌数据错误/功能异常反馈/改进建议等）"></textarea>
+            <div style="margin-top: 15px;">
+                <button onclick="submitBugReport()" style="background-color: #4CAF50; padding: 10px 20px;">提交</button>
+                <button onclick="closeModal('bug-report-modal')" style="padding: 10px 20px;">取消</button>
+            </div>
+            <div id="bug-report-status" style="margin-top: 10px; color: green;"></div>
         </div>
     </div>
     <!-- 帮助说明模态框 -->
@@ -151,47 +165,56 @@
             <span class="close-btn" onclick="closeModal('settings3')">&times;</span>
             <h2 class="contributor-title">开发者与贡献者</h2>
             <div class="button-row">
-                <a href="#" class="btn blue-btn" target="_blank">游戏讨论帖</a>
-                <a href="https://message.bilibili.com/#/whisper/mid942707" class="btn blue-btn" target="_blank">BUG提交</a>
+                <a href="https://nga.178.com/read.php?tid=44342694" class="btn blue-btn" target="_blank">游戏讨论帖</a>
+                <button onclick="showBugReportModal()" class="btn blue-btn">BUG提交</button>
+                <a href="https://github.com/kpikame/bwpuzzle" class="btn blue-btn" target="_blank">项目代码</a>
             </div>
             <div class="contributor-list">
+                <!-- 游戏 -->
+                <div class="contributor">
+                    <a href="https://space.bilibili.com/431646218" target="_blank">
+                      <img src="{{ url_for('static', filename='icons/百闻牌.jpg') }}" alt="百闻牌">
+                    </a>
+                    <h3>百闻牌</h3>
+                    <p>本小游戏的底层逻辑</p>
+                </div>
                 <!-- 开发者信息 -->
                 <div class="contributor">
                     <a href="https://space.bilibili.com/942707" target="_blank">
-                      <img src="{{ url_for('static', filename='icons/金鱼姬.png') }}" alt="金鱼姬">
+                      <img src="{{ url_for('static', filename='icons/锦鲤.png') }}" alt="锦鲤">
                     </a>
-                    <h3>金鱼姬</h3>
-                    <p>开发人员</p>
+                    <h3>锦鲤</h3>
+                    <p>作者</p>
+                </div>
+                <!-- 贡献者信息 -->
+                <div class="contributor">
+                    <img src="{{ url_for('static', filename='icons/AN.jpg') }}" alt="AN">
+                    <h3>skyoya</h3>
+                    <p>没帮上什么忙的作者亲友</p>
+                </div>
+                <!-- 贡献者信息 -->
+                <div class="contributor">
+                    <img src="{{ url_for('static', filename='icons/幻凰溟.jpg') }}" alt="幻凰溟">
+                    <h3>幻凰溟</h3>
+                    <p>帮忙发现高达一个错误的内测玩家</p>
                 </div>
                 <!-- 贡献者信息 -->
                 <div class="contributor">
                     <img src="{{ url_for('static', filename='icons/青行灯.png') }}" alt="青行灯">
                     <h3>青行灯</h3>
-                    <p>百闻馆馆主</p>
+                    <p>百闻馆馆主/卡牌供应商</p>
                 </div>
                 <!-- 贡献者信息 -->
                 <div class="contributor">
-                    <img src="{{ url_for('static', filename='icons/荒.png') }}" alt="荒">
-                    <h3>荒</h3>
-                    <p>开发人员亲友</p>
-                </div>
-                <!-- 贡献者信息 -->
-                <div class="contributor">
-                    <img src="{{ url_for('static', filename='icons/辉夜姬.png') }}" alt="辉夜姬">
-                    <h3>辉夜姬</h3>
-                    <p>开发人员亲友</p>
-                </div>
-                <!-- 贡献者信息 -->
-                <div class="contributor">
-                    <img src="{{ url_for('static', filename='icons/烟烟罗.png') }}" alt="烟烟罗">
-                    <h3>烟烟罗</h3>
-                    <p>开发人员亲友</p>
-                </div>
-                <!-- 贡献者信息 -->
-                <div class="contributor">
-                    <img src="{{ url_for('static', filename='icons/三目.png') }}" alt="烟烟罗">
+                    <img src="{{ url_for('static', filename='icons/三目.png') }}" alt="三目">
                     <h3>三目</h3>
-                    <p>有客人看到本猫的打30了吗？</p>
+                    <p>蜃气楼猫侍卫/游戏名灵感来源</p>
+                </div>
+                <!-- 贡献者信息 -->
+                <div class="contributor">
+                    <img src="{{ url_for('static', filename='icons/妖刀姬.png') }}" alt="妖刀姬">
+                    <h3>妖刀姬</h3>
+                    <p>页面小图标模特</p>
                 </div>
             </div>
         </div>
@@ -216,7 +239,7 @@
         卡牌名称错误，请重新输入！
     </div>
     <div class="container">
-        <h1>《阴阳师:百闻牌》之线索·判明 测试版本</h1>
+        <h1>线索·判明 | 蜃气楼猜卡王</h1>
         <div id="puzzle-container">
             <div class="suggestion-container">
                 <input type="text" id="answer" placeholder="请输入卡牌名称" autocomplete="off">
@@ -1047,6 +1070,46 @@
             closeModal('settings2');
         }
 
+        // 显示BUG报告模态框
+        function showBugReportModal() {
+            const modal = document.getElementById('bug-report-modal');
+            modal.style.display = 'flex';
+            document.getElementById('bug-report-textarea').value = '';
+            document.getElementById('bug-report-status').textContent = '';
+        }
+
+        // 提交BUG报告
+        function submitBugReport() {
+            const bugReport = document.getElementById('bug-report-textarea').value.trim();
+            const statusElement = document.getElementById('bug-report-status');
+
+            if (!bugReport) {
+                statusElement.textContent = '请输入BUG描述';
+                statusElement.style.color = 'red';
+                return;
+            }
+
+            fetch('/api/submit_bug', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ bug_report: bugReport })
+            })
+            .then(response => response.json())
+            .then(data => {
+                statusElement.textContent = data.message;
+                statusElement.style.color = 'green';
+                setTimeout(() => {
+                    closeModal('bug-report-modal');
+                }, 2000);
+            })
+            .catch(error => {
+                statusElement.textContent = '提交失败，请重试';
+                statusElement.style.color = 'red';
+                console.error('Error:', error);
+            });
+        }
 
         // 页面加载时初始化
         window.onload = function() {
@@ -1054,6 +1117,9 @@
             updateStats();
             updateAttemptsDisplay();
         };
+
+
+
     </script>
 </body>
 </html>
