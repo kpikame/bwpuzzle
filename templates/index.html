@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>bwpuzzle</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='icons/favicon.png') }}" type="image/x-icon">
+    <style>
+        /* 正确的样式 */
+        .correct {
+            background-color: #d4edda; /* 浅绿色 */
+            font-weight: bold;
+            color: green;
+        }
+        /* 错误的样式 */
+        .incorrect {
+            background-color: #f4f4f5; /* 浅白色 */
+        }
+        /* 错误但接近样式 */
+        .incorrect_but_near {
+            background-color: #faf0e6; /* 浅橙色 */
+            font-weight: bold;
+            color: #ffa500;
+        }
+        .partial {
+            background-color: #fff3cd; /* 浅黄色 */
+        }
+        .sub-table {
+            border-collapse: collapse;
+            width: 100%;
+            display: flex;
+        }
+        .sub-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+            margin: 2px;
+        }
+        .sub-table tr {
+            display: flex; /* 使用 flex 布局使子表格行中的单元格水平排列 */
+        }
+        .sub-table-container {
+            display: flex;
+            flex-wrap: wrap; /* 允许子表格换行 */
+            justify-content: center; /* 居中排序 */
+            gap: 4px; /* 添加间距 */
+        }
+        .sub-table-item {
+            flex: 1 0 auto; /* 允许子表格自动调整宽度 */
+            min-width: 100px; /* 设置最小宽度 */
+        }
+
+        /* 新增的suggestion-list样式 */
+        .suggestion-container {
+            position: relative;
+            width: 100%;
+            // max-width: 300px; /* 与输入框宽度一致 */
+            margin: 0 auto;
+        }
+
+        .suggestion-list {
+            position: absolute;
+            width: 81.5%;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-top: none;
+            background: white;
+            z-index: 1000;
+            display: none;
+            margin-left: 118.5px;
+            box-sizing: border-box;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .suggestion-item {
+            padding: 8px;
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .suggestion-item:hover {
+            background-color: #f0f0f0;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="settings-bar">
+        <div class="settings-buttons">
+        <button onclick="showHelpModal()">
+            <img src="{{ url_for('static', filename='icons/帮助.png') }}">
+        </button>
+        <button onclick="showSettingsBox('settings2')">
+            <img src="{{ url_for('static', filename='icons/设置.png') }}">
+        </button>
+        <button onclick="showSettingsBox('settings3')">
+            <img src="{{ url_for('static', filename='icons/开发人员.png') }}">
+        </button>
+        </div>
+    </div>
+    <!-- 帮助说明模态框 -->
+    <div id="help-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('help-modal')">&times;</span>
+            <div class="tab-container">
+                <!-- 标签页标题 -->
+                <div class="tab-header">
+                    <button class="tab-btn active" onclick="openTab(event, 'tab1')">游戏玩法说明</button>
+                    <button class="tab-btn" onclick="openTab(event, 'tab2')">词条提示</button>
+                </div>
+                <!-- 标签页内容 -->
+                <div id="tab1" class="tab-content">
+                    <!-- 游戏玩法说明内容 -->
+                </div>
+                <div id="tab2" class="tab-content" style="display: none;">
+                    <!-- 卡包排序内容 -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 玩法设置 -->
+    <div id="settings2" class="modal2">
+        <div class="modal2-content">
+            <span class="close-btn" onclick="closeModal('settings2')">&times;</span>
+            <h2 class="contributor-title">设置</h2>
+            <div class="setting-item">
+                <div class="arrow-settings">
+                    <label><span>左侧数值-箭头显示：</span><input type="checkbox" id="show-atk-arrow" checked></label>
+                    <label><span>右侧数值-箭头显示：</span><input type="checkbox" id="show-hp-arrow" checked></label>
+                    <label><span>所属卡包-箭头显示：</span><input type="checkbox" id="show-pack-arrow" checked></label>
+                    <label><span>卡牌等级-箭头显示：</span><input type="checkbox" id="show-level-arrow"></label>
+                    <label><span>稀有度-箭头显示：  </span><input type="checkbox" id="show-rarity-arrow"></label>
+                    <!-- 新增困难模式复选框 -->
+                    <label><span>困难模式：</span><input type="checkbox" id="hard-mode"></label>
+                </div>
+                <div class="attempts-control">
+                    <label for="attemptsValue">最大尝试次数 (3-15)：</label>
+                    <button class="adjust-btn minus-btn" onclick="decreaseAttempts()">-</button>
+                    <span id="attemptsValue" class="attempts-value">5</span>
+                    <button class="adjust-btn plus-btn" onclick="increaseAttempts()">+</button>
+                </div>
+                <button onclick="restartGameWithNewSettings()" class="restart-btn">应用并重新开始</button>
+            </div>
+        </div>
+    </div>
+    <!-- 开发者信息模态框 -->
+    <div id="settings3" class="modal2">
+        <div class="modal2-content">
+            <span class="close-btn" onclick="closeModal('settings3')">&times;</span>
+            <h2 class="contributor-title">开发者与贡献者</h2>
+            <div class="button-row">
+                <a href="#" class="btn blue-btn" target="_blank">游戏讨论帖</a>
+                <a href="https://message.bilibili.com/#/whisper/mid942707" class="btn blue-btn" target="_blank">BUG提交</a>
+            </div>
+            <div class="contributor-list">
+                <!-- 开发者信息 -->
+                <div class="contributor">
+                    <a href="https://space.bilibili.com/942707" target="_blank">
+                      <img src="{{ url_for('static', filename='icons/金鱼姬.png') }}" alt="金鱼姬">
+                    </a>
+                    <h3>金鱼姬</h3>
+                    <p>开发人员</p>
+                </div>
+                <!-- 贡献者信息 -->
+                <div class="contributor">
+                    <img src="{{ url_for('static', filename='icons/青行灯.png') }}" alt="青行灯">
+                    <h3>青行灯</h3>
+                    <p>百闻馆馆主</p>
+                </div>
+                <!-- 贡献者信息 -->
+                <div class="contributor">
+                    <img src="{{ url_for('static', filename='icons/荒.png') }}" alt="荒">
+                    <h3>荒</h3>
+                    <p>开发人员亲友</p>
+                </div>
+                <!-- 贡献者信息 -->
+                <div class="contributor">
+                    <img src="{{ url_for('static', filename='icons/辉夜姬.png') }}" alt="辉夜姬">
+                    <h3>辉夜姬</h3>
+                    <p>开发人员亲友</p>
+                </div>
+                <!-- 贡献者信息 -->
+                <div class="contributor">
+                    <img src="{{ url_for('static', filename='icons/烟烟罗.png') }}" alt="烟烟罗">
+                    <h3>烟烟罗</h3>
+                    <p>开发人员亲友</p>
+                </div>
+                <!-- 贡献者信息 -->
+                <div class="contributor">
+                    <img src="{{ url_for('static', filename='icons/三目.png') }}" alt="烟烟罗">
+                    <h3>三目</h3>
+                    <p>有客人看到本猫的打30了吗？</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="settings-message-box" class="settings-message-box">
+        <div class="message-content">
+            <h3>设置</h3>
+            <p id="settings-message-text"></p>
+            <button onclick="hideSettingsMessageBox()">关闭</button>
+        </div>
+    </div>
+    <div id="custom-message-box" class="custom-message-box">
+    <div class="message-content">
+        <h3>答案</h3>
+        <div id="message-image-container"></div>
+        <p id="message-text"></p>
+        <button onclick="hideCustomMessageBox()">返回</button>
+        <button onclick="restartGame()">再来一次</button>
+    </div>
+    </div>
+    <div id="custom-alert" class="custom-alert">
+        卡牌名称错误，请重新输入！
+    </div>
+    <div class="container">
+        <h1>《阴阳师:百闻牌》之线索·判明 测试版本</h1>
+        <div id="puzzle-container">
+            <div class="suggestion-container">
+                <input type="text" id="answer" placeholder="请输入卡牌名称" autocomplete="off">
+                <div class="suggestion-list" id="suggestion-list"></div>
+            </div>
+            <div style="width:100%;margin-top:20px;"></div>
+            <button id="start-button" onclick="startRandomGame()">↺ 随机开局</button>
+            <button id="check-answer-button" onclick="checkAnswer()">确定</button>
+            <button id="surrender-button" onclick="surrenderGame()">投降</button>
+            <button id="restart-button-1" onclick="restartGame()">重新开始</button>
+        </div>
+    </div>
+    <div style="width:100%;margin-top:5px;"></div>
+    <div class="stats-container" id="stats-container">状态</div>
+    <div style="width:100%;margin-top:5px;"></div>
+    <div class="container">
+        <div>
+            <p id="result"></p>
+            <div id="feedback-container">
+                <table id="result-table">
+                    <thead>
+                        <tr>
+                            <th>卡牌名称</th>
+                            <th>式神名称</th>
+                            <th>式神定位</th>
+                            <th>所属派系</th>
+                            <th>卡牌类型</th>
+                            <th>左侧数值</th>
+                            <th>右侧数值</th>
+                            <th>关键字</th>
+                            <th>卡牌等级</th>
+                            <th>稀有度</th>
+                            <th>所属卡包</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-tbody">
+                        <!-- Results will be added here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isHardMode = false;
+        let attempts = 0;
+        const minAttempts = 3;
+        const maxAttemptsLimit = 15;
+        let maxAttempts = 5;
+        window.targetCard = null;
+        let cardData = [];  // 存储完整的卡牌数据
+        let suggestionList = [];
+
+        // 从后端获取谜题和卡牌数据
+        function fetchPuzzleAndNames() {
+            fetch('/api/puzzle')
+                .then(response => response.json())
+                .then(data => {
+                    window.targetCard = data;
+                });
+
+            fetch('/api/card_names')
+                .then(response => response.json())
+                .then(cards => {
+                    cardData = cards;  // 存储完整的卡牌数据
+                    console.log('Loaded card data:', cardData);  // 调试输出
+                    suggestionList = cards;
+                });
+        }
+
+        // 修改createSubTableCell函数
+        function createSubTableCell(value, status, field) {
+            const cell = document.createElement('td');
+            cell.textContent = value;
+
+            // 如果是困难模式且状态不是'correct'，直接返回不添加任何样式或箭头
+            if (isHardMode && status !== 'correct') {
+                return cell;
+            }
+
+            // 获取复选框状态（仅在非困难模式下使用）
+            if (!isHardMode) {
+                const showAtkArrow = document.getElementById('show-atk-arrow').checked;
+                const showHpArrow = document.getElementById('show-hp-arrow').checked;
+                const showPackArrow = document.getElementById('show-pack-arrow').checked;
+                const showLevelArrow = document.getElementById('show-level-arrow').checked;
+                const showRarityArrow = document.getElementById('show-rarity-arrow').checked;
+
+                // 决定是否显示箭头
+                let showArrow = false;
+                if (status) {
+                    switch (field) {
+                        case 'atkchange':
+                            showArrow = showAtkArrow;
+                            break;
+                        case 'hpchange':
+                            showArrow = showHpArrow;
+                            break;
+                        case 'cardpack':
+                            showArrow = showPackArrow;
+                            break;
+                        case 'level':
+                            showArrow = showLevelArrow;
+                            break;
+                        case 'rarity':
+                            showArrow = showRarityArrow;
+                            break;
+                        default:
+                            showArrow = true; // 其他字段默认显示箭头
+                    }
+
+                    if (showArrow) {
+                        cell.textContent += ` ${getArrow(status)}`;
+                    }
+                }
+            }
+
+            applyFeedbackStyle(cell, status);
+            return cell;
+        }
+
+        // 检查用户答案
+        function checkAnswer() {
+            const guessInput = document.getElementById('answer');
+            const userAnswer = guessInput.value.trim().toLowerCase();
+
+            // 验证输入是否为空
+            if (!userAnswer) {
+                showCustomAlert('请输入卡牌名称！');
+                return;
+            }
+
+            // 验证卡牌名称是否存在
+            const cardExists = cardData.some(card => card.name.toLowerCase() === userAnswer);
+            if (!cardExists) {
+                showCustomAlert('卡牌名称错误，请重新输入！');
+                return;
+            }
+
+            fetch('/api/check', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    answer: userAnswer,
+                    targetCard: window.targetCard
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultTbody = document.getElementById('result-tbody');
+                const userCard = data.userCard;
+                const feedback = data.feedback;
+
+                // 清空输入框
+                guessInput.value = '';
+
+                // 创建一行新的结果
+                const row = document.createElement('tr');
+
+                // 卡牌名称 name
+                const nameCell = document.createElement('td');
+                const imageContainer = document.createElement('div');
+                const image = document.createElement('img');
+                if (userCard && userCard.image_path) {
+                    image.src = userCard.image_path;
+                    image.alt = userCard.name;
+                    image.style.width = '61.404px'; // 缩放图片到固定大小
+                    image.style.height = '109.2px';
+                    imageContainer.appendChild(image);
+                }
+                const nameText = document.createElement('div');
+                nameText.textContent = userCard ? userCard.name : 'N/A';
+                imageContainer.appendChild(nameText);
+                nameCell.appendChild(imageContainer);
+                applyFeedbackStyle(nameCell, feedback.name);
+                row.appendChild(nameCell);
+
+                // shikigaminame 式神名称
+                const shikigaminamesCell = document.createElement('td');
+                const shikigaminamesSubTable = document.createElement('table');
+                shikigaminamesSubTable.className = 'sub-table';
+                shikigaminamesSubTable.innerHTML = '<tbody><tr></tr></tbody>';
+                const shikigaminamesSubRow = shikigaminamesSubTable.querySelector('tr');
+                const userShikigaminames = Array.isArray(userCard?.shikigaminames) ? userCard.shikigaminames : [];
+                const targetShikigaminames = Array.isArray(window.targetCard?.shikigaminames) ? window.targetCard.shikigaminames : [];
+                userShikigaminames.forEach((shikigaminame, index) => {
+                    const shikigaminameCell = document.createElement('td');
+                    shikigaminameCell.textContent = shikigaminame;
+                    applyFeedbackStyle(shikigaminameCell, targetShikigaminames.includes(shikigaminame) ? 'correct' : 'incorrect');
+                    shikigaminamesSubRow.appendChild(shikigaminameCell);
+                });
+                shikigaminamesCell.appendChild(shikigaminamesSubTable);
+                row.appendChild(shikigaminamesCell);
+
+                // shikigamiposition 式神定位
+                const shikigamipositionsCell = document.createElement('td');
+                const shikigamipositionsSubTable = document.createElement('table');
+                shikigamipositionsSubTable.className = 'sub-table';
+                shikigamipositionsSubTable.innerHTML = '<tbody><tr></tr></tbody>';
+                const shikigamipositionsSubRow = shikigamipositionsSubTable.querySelector('tr');
+                const userShikigamipositions = Array.isArray(userCard?.shikigamipositions) ? userCard.shikigamipositions : [];
+                const targetShikigamipositions = Array.isArray(window.targetCard?.shikigamipositions) ? window.targetCard.shikigamipositions : [];
+                userShikigamipositions.forEach((shikigamiposition, index) => {
+                    const shikigamipositionCell = document.createElement('td');
+                    shikigamipositionCell.textContent = shikigamiposition;
+                    applyFeedbackStyle(shikigamipositionCell, targetShikigamipositions.includes(shikigamiposition) ? 'correct' : 'incorrect');
+                    shikigamipositionsSubRow.appendChild(shikigamipositionCell);
+                });
+                shikigamipositionsCell.appendChild(shikigamipositionsSubTable);
+                row.appendChild(shikigamipositionsCell);
+
+                // factions 式神派系
+                const factionsCell = document.createElement('td');
+                const factionsSubTable = document.createElement('table');
+                factionsSubTable.className = 'sub-table';
+                factionsSubTable.innerHTML = '<tbody><tr></tr></tbody>';
+                const factionsSubRow = factionsSubTable.querySelector('tr');
+                const factionsValue = userCard ? userCard.factions : 'N/A';
+                factionsSubRow.appendChild(createSubTableCell(factionsValue, feedback.factions));
+                factionsCell.appendChild(factionsSubTable);
+                row.appendChild(factionsCell);
+
+                // cardtype 卡牌类别
+                const cardtypeCell = document.createElement('td');
+                const cardtypeSubTable = document.createElement('table');
+                cardtypeSubTable.className = 'sub-table';
+                cardtypeSubTable.innerHTML = '<tbody><tr></tr></tbody>';
+                const cardtypeSubRow = cardtypeSubTable.querySelector('tr');
+                const cardtypeValue = userCard ? userCard.cardtype : 'N/A';
+                cardtypeSubRow.appendChild(createSubTableCell(cardtypeValue, feedback.cardtype));
+                cardtypeCell.appendChild(cardtypeSubTable);
+                row.appendChild(cardtypeCell);
+
+                // atkchange 力量变化
+                const atkchangeCell = document.createElement('td');
+                const atkchangeSubTable = document.createElement('table');
+                atkchangeSubTable.className = 'sub-table';
+                atkchangeSubTable.innerHTML = '<tbody><tr></tr></tbody>';
+                const atkchangeSubRow = atkchangeSubTable.querySelector('tr');
+                const atkchangeValue = userCard ? userCard.atkchange : 'N/A';
+                atkchangeSubRow.appendChild(createSubTableCell(atkchangeValue, feedback.atkchange, 'atkchange'));
+                atkchangeCell.appendChild(atkchangeSubTable);
+                row.appendChild(atkchangeCell);
+
+                // hpchange 血量or护甲变化
+                const hpchangeCell = document.createElement('td');
+                const hpchangeSubTable = document.createElement('table');
+                hpchangeSubTable.className = 'sub-table';
+                hpchangeSubTable.innerHTML = '<tbody><tr></tr></tbody>';
+                const hpchangeSubRow = hpchangeSubTable.querySelector('tr');
+                const hpchangeValue = userCard ? userCard.hpchange : 'N/A';
+                hpchangeSubRow.appendChild(createSubTableCell(hpchangeValue, feedback.hpchange, 'hpchange' ));
+                hpchangeCell.appendChild(hpchangeSubTable);
+                row.appendChild(hpchangeCell);
+
+                // terms 关键字
+                const termsCell = document.createElement('td');
+                const termsSubTable = document.createElement('table');
+                termsSubTable.className = 'sub-table';
+                termsSubTable.innerHTML = '<tbody><tr></tr></tbody>';
+                const termsSubRow = termsSubTable.querySelector('tr');
+                const userTerms = Array.isArray(userCard?.terms) ? userCard.terms : [];
+                const targetTerms = Array.isArray(window.targetCard?.terms) ? window.targetCard.terms : [];
+                userTerms.forEach((term, index) => {
+                    const termCell = document.createElement('td');
+                    termCell.textContent = term;
+                    applyFeedbackStyle(termCell, targetTerms.includes(term) ? 'correct' : 'incorrect');
+                    termsSubRow.appendChild(termCell);
+                });
+                termsCell.appendChild(termsSubTable);
+                row.appendChild(termsCell);
+
+                // level 卡牌等级
+                const levelCell = document.createElement('td');
+                const levelSubTable = document.createElement('table');
+                levelSubTable.className = 'sub-table';
+                levelSubTable.innerHTML = '<tbody><tr></tr></tbody>';
+                const levelSubRow = levelSubTable.querySelector('tr');
+                const levelValue = userCard ? userCard.level : 'N/A';
+                levelSubRow.appendChild(createSubTableCell(levelValue, feedback.level, 'level'));
+                levelCell.appendChild(levelSubTable);
+                row.appendChild(levelCell);
+
+                // rarity 稀有度
+                const rarityCell = document.createElement('td');
+                const raritySubTable = document.createElement('table');
+                raritySubTable.className = 'sub-table';
+                raritySubTable.innerHTML = '<tbody><tr></tr></tbody>';
+                const raritySubRow = raritySubTable.querySelector('tr');
+                const rarityValue = userCard ? userCard.rarity : 'N/A';
+                raritySubRow.appendChild(createSubTableCell(rarityValue, feedback.rarity, 'rarity'));
+                rarityCell.appendChild(raritySubTable);
+                row.appendChild(rarityCell);
+
+                // cardpack 所属卡包
+                const cardpackCell = document.createElement('td');
+                const cardpackSubTable = document.createElement('table');
+                cardpackSubTable.className = 'sub-table';
+                cardpackSubTable.innerHTML = '<tbody><tr></tr></tbody>';
+                const cardpackSubRow = cardpackSubTable.querySelector('tr');
+                const cardpackValue = userCard ? userCard.cardpack : 'N/A';
+                cardpackSubRow.appendChild(createSubTableCell(cardpackValue, feedback.cardpack, 'cardpack'));
+                cardpackCell.appendChild(cardpackSubTable);
+                row.appendChild(cardpackCell);
+
+                // 添加到表格的最上方
+                if (resultTbody.firstChild) {
+                    resultTbody.insertBefore(row, resultTbody.firstChild);
+                } else {
+                    resultTbody.appendChild(row);
+                }
+
+                //分别检查所有项是否猜对
+                const isNameCorrect = feedback.name === 'correct';
+                const isShikigaminamesCorrect = feedback.shikigaminames === 'correct';
+                const isShikigamipositionsCorrect = feedback.shikigamipositions === 'correct';
+                const isFactionsCorrect = feedback.factions === 'correct';
+                const isCardtypeCorrect = feedback.cardtype === 'correct';
+                const isAtkchangeCorrect = feedback.atkchange === 'correct';
+                const isHpchangeCorrect = feedback.hpchange === 'correct';
+                const isTermsCorrect = feedback.terms === 'correct';
+                const isLevelCorrect = feedback.level === 'correct';
+                const isRarityCorrect = feedback.rarity === 'correct';
+                const isCardpackCorrect = feedback.cardpack === 'correct';
+
+                console.log({
+                    isNameCorrect,
+                    isShikigaminamesCorrect,
+                    isShikigamipositionsCorrect,
+                    isFactionsCorrect,
+                    isCardtypeCorrect,
+                    isAtkchangeCorrect,
+                    isHpchangeCorrect,
+                    isTermsCorrect,
+                    isLevelCorrect,
+                    isRarityCorrect,
+                    isCardpackCorrect
+                });
+
+                if (isNameCorrect && isShikigaminamesCorrect && isShikigamipositionsCorrect && isFactionsCorrect &&
+                    isCardtypeCorrect && isAtkchangeCorrect && isHpchangeCorrect && isTermsCorrect && isLevelCorrect && isRarityCorrect && isCardpackCorrect ) {
+                    const resultElement = document.getElementById('result');
+                    resultElement.textContent = '恭喜！您猜对了正确的卡牌！';
+                    resultElement.style.color = 'green';
+                    showCustomMessageBox(window.targetCard);
+                    disableButtons();
+                } else {
+                    if (attempts >= maxAttempts - 1) {
+                        attempts++;
+                        updateStats()
+                        showCustomMessageBox(window.targetCard);
+                        return;
+                }
+            }
+                // 增加尝试次数
+                attempts++;
+
+                // 更新状态信息
+                updateStats();
+            });
+        }
+
+        // 随机选择一张卡牌并开始游戏
+        function startRandomGame() {
+            // 确保 cardData 已加载
+            if (cardData.length === 0) {
+                console.error('卡牌数据尚未加载');
+                return;
+            }
+
+            // 随机选择一张与当前目标卡牌不同的卡牌
+            let randomIndex;
+            do {
+                randomIndex = Math.floor(Math.random() * cardData.length);
+            } while (window.targetCard && cardData[randomIndex].name === window.targetCard.name);
+
+            const randomCard = cardData[randomIndex];
+
+            // 设置目标卡牌
+            // window.targetCard = randomCard;
+
+            // 清空输入框
+            const answerInput = document.getElementById('answer');
+            answerInput.value = '';
+
+            // 清空结果表格
+            const resultTbody = document.getElementById('result-tbody');
+            resultTbody.innerHTML = '';
+
+            // 隐藏结果提示
+            const resultElement = document.getElementById('result');
+            resultElement.textContent = '';
+
+            // 隐藏消息框（如果有）
+            const messageBox = document.getElementById('custom-message-box');
+            if (messageBox) {
+                messageBox.style.display = 'none';
+            }
+
+            // 重置尝试次数
+            attempts = 0;
+
+            // 模拟用户输入
+            answerInput.value = randomCard.name;
+
+            // 调用 checkAnswer() 来验证输入
+            checkAnswer();
+
+            // 拒绝连续重新开始
+            document.getElementById('start-button').disabled = true;
+        }
+
+        // 修改showCustomMessageBox函数以更新显示
+        function showCustomMessageBox(card) {
+            const messageBox = document.getElementById('custom-message-box');
+            const imageContainer = document.getElementById('message-image-container');
+            const messageText = document.getElementById('message-text');
+            const valueDisplay = document.getElementById('attemptsValue');
+
+            // 清空内容
+            imageContainer.innerHTML = '';
+            messageText.textContent = '';
+
+            // 显示卡牌图片
+            if (card.image_path) {
+                const image = document.createElement('img');
+                image.src = card.image_path;
+                image.alt = card.name;
+                image.style.width = '184.2273x'; // 缩放图片到固定大小
+                image.style.height = '327.6px';
+                imageContainer.appendChild(image);
+            }
+
+            // 显示卡牌名称
+            messageText.innerHTML = `游戏结束！正确答案是：<strong><u style="color: red;">${card.name}</u></strong> \n （* 卡图可能不是最新版本，请以游戏内为准）`;
+
+            // 更新显示的值
+            valueDisplay.textContent = maxAttempts;
+
+            // 显示消息框
+            messageBox.style.display = 'flex';
+        }
+
+        // 显示自定义提示框
+        function showCustomAlert(message) {
+            const alertBox = document.getElementById('custom-alert');
+            alertBox.textContent = message;
+            alertBox.classList.add('show');
+
+            // 设置3秒后自动隐藏
+            setTimeout(() => {
+                alertBox.classList.remove('show');
+            }, 3000);
+        }
+
+        // 根据反馈状态返回箭头
+        function getArrow(status) {
+            switch (status) {
+                case 'higher': return '(↓)';
+                case 'lower': return '(↑)';
+                case 'higher_and_near': return '(↓)';
+                case 'lower_and_near': return '(↑)';
+                default: return '';
+            }
+        }
+
+        // 修改applyFeedbackStyle函数
+        function applyFeedbackStyle(cell, status) {
+            // 如果是困难模式且状态不是'correct'，不应用任何样式
+            if (isHardMode && status !== 'correct') {
+                return;
+            }
+
+            // 原有的样式应用逻辑
+            if (status === 'correct') {
+                cell.classList.add('correct');
+            } else if (status === 'higher' || status === 'lower' || status ==='incorrect') {
+                cell.classList.add('incorrect');
+            } else if (status === 'lower_and_near' || status === 'higher_and_near') {
+                cell.classList.add('incorrect_but_near');
+            } else if (status === 'partial') {
+                cell.classList.add('partial');
+            }
+        }
+
+        // 重新开始游戏
+        function restartGame() {
+            // 重置游戏状态
+            attempts = 0;
+            updateStats()
+            const resultTbody = document.getElementById('result-tbody');
+            resultTbody.innerHTML = ''; // 清空结果表格
+            document.getElementById('result').textContent = '';
+            document.getElementById('answer').value = ''; // 清空输入框
+
+            // 隐藏消息框
+            document.getElementById('custom-message-box').style.display = 'none';
+            enableButtons();
+
+            // 重新获取谜题和宝可梦名称
+            fetchPuzzleAndNames();
+        }
+
+        // 投降
+        function surrenderGame() {
+            // 重置游戏状态
+            attempts = 0;
+            updateStats()
+            showCustomMessageBox(window.targetCard);
+
+            disableButtons();
+        }
+
+        // 函数用于更新状态信息
+        function updateStats() {
+            const statsContainer = document.getElementById('stats-container');
+            statsContainer.textContent = `猜测次数: ${attempts}/${maxAttempts}`;
+        }
+
+        // 修改输入框事件处理
+        document.getElementById('answer').addEventListener('input', function(e) {
+            const input = e.target;
+            const value = input.value.toLowerCase();
+            const suggestionListElement = document.getElementById('suggestion-list');
+
+            if (value.length === 0) {
+                suggestionListElement.style.display = 'none';
+                return;
+            }
+
+            // 过滤建议列表 - 同时考虑name、shikigaminames和cardpack
+            const filteredSuggestions = cardData.filter(card => {
+                // 检查name字段
+                if (card.name && card.name.toLowerCase().includes(value)) {
+                    console.log(`Matched by name: ${card.name}`);  // 调试输出
+                    return true;
+                }
+                // 检查shikigaminames字段，可能是字符串或数组
+                let shikigaminamesArray = [];
+                if (card.shikigaminames) {
+                    shikigaminamesArray = Array.isArray(card.shikigaminames)
+                        ? card.shikigaminames
+                        : [card.shikigaminames];  // 转换为数组
+                }
+
+                if (shikigaminamesArray.length > 0) {
+                    const match = shikigaminamesArray.some(shikigami => {
+                        if (typeof shikigami === 'string') {
+                            const result = shikigami.toLowerCase().includes(value);
+                            if (result) {
+                                console.log(`Matched by shikigaminames: ${card.name} (${shikigami})`);  // 调试输出
+                            }
+                            return result;
+                        }
+                        return false;
+                    });
+                    if (match) {
+                        console.log(`Matched by shikigaminames: ${card.name}`);  // 调试输出
+                        return true;
+                    }
+                }
+
+                // 检查cardpack字段
+                if (card.cardpack && card.cardpack.toLowerCase().includes(value)) {
+                    console.log(`Matched by cardpack: ${card.name}`);  // 调试输出
+                    return true;
+                }
+
+                return false;
+            });
+
+            console.log('Filtered suggestions:', filteredSuggestions);  // 调试输出
+
+            if (filteredSuggestions.length > 0) {
+                // 清空并重建建议列表
+                suggestionListElement.innerHTML = '';
+                filteredSuggestions.forEach(card => {
+                    // 创建显示文本，显示卡牌名称、shikigaminames和cardpack
+                    const displayText = card.name;
+                    const shikigaminamesText = Array.isArray(card.shikigaminames)
+                        ? card.shikigaminames.join(', ')
+                        : card.shikigaminames || '';
+
+                    const suggestionItem = document.createElement('div');
+                    suggestionItem.className = 'suggestion-item';
+
+                    // 主文本（卡牌名称）
+                    const mainText = document.createElement('span');
+                    mainText.textContent = displayText;
+                    suggestionItem.appendChild(mainText);
+
+                    // 副文本（shikigaminames和cardpack）
+                    if (shikigaminamesText || card.cardpack) {
+                        const subText = document.createElement('span');
+                        subText.style.fontSize = '0.8em';
+                        subText.style.color = '#666';
+                        subText.style.marginLeft = '8px'; // 添加一些间距
+
+                        // 组合shikigaminames和cardpack
+                        const parts = [];
+                        if (shikigaminamesText) {
+                            parts.push(shikigaminamesText);
+                        }
+                        if (card.cardpack) {
+                            parts.push(card.cardpack);
+                        }
+                        subText.textContent = parts.join(' / ');
+
+                        suggestionItem.appendChild(subText);
+                    }
+
+                    suggestionItem.addEventListener('click', function() {
+                        input.value = card.name;  // 点击时填充卡牌名称
+                        suggestionListElement.style.display = 'none';
+                    });
+                    suggestionListElement.appendChild(suggestionItem);
+                });
+
+                // 显示建议列表
+                suggestionListElement.style.display = 'block';
+            } else {
+                suggestionListElement.style.display = 'none';
+            }
+        });
+
+        // 显示开发者信息模态框
+        function showSettingsBox(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.style.display = 'flex';
+        }
+
+        // 关闭模态框
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.style.display = 'none';
+        }
+
+        // 隐藏设置消息框
+        function hideCustomMessageBox() {
+            document.getElementById('custom-message-box').style.display = 'none';
+        }
+
+        // 禁用所有相关按钮
+        function disableButtons() {
+            document.getElementById('start-button').disabled = true;
+            document.getElementById('check-answer-button').disabled = true;
+            document.getElementById('surrender-button').disabled = true;
+        }
+
+        // 可选：启用按钮的函数（如果需要恢复）
+        function enableButtons() {
+            document.getElementById('start-button').disabled = false;
+            document.getElementById('check-answer-button').disabled = false;
+            document.getElementById('surrender-button').disabled = false;
+        }
+
+        // 显示帮助说明模态框
+        function showHelpModal() {
+            const modal = document.getElementById('help-modal');
+            const tab1Content = document.getElementById('tab1');
+            const tab2Content = document.getElementById('tab2');
+
+            // 动态插入游戏玩法说明内容
+            tab1Content.innerHTML = `
+                <div class="help-body">
+                    <h2>游戏目标：</h2>
+                    <p>通过输入卡牌名称进行猜测，找出目标卡牌。每次猜测后，你将获得输入卡牌的相关信息，帮助你逐步接近答案。</p>
+
+                    <h3>提示颜色说明：</h3>
+                    <div class="highlight-section">
+                        <p><span class="green-highlight">绿色高亮</span>表示该信息与目标卡牌完全相同。</p>
+                        <p><span class="yellow-highlight">黄色高亮</span>表示该信息与目标卡牌接近但不相同。</p>
+                    </div>
+
+                    <h3>黄色高亮的触发条件：</h3>
+                    <ul>
+                        <li>左侧数值（力量加成、力量数值等）：与目标卡牌的差值 ≤ 3</li>
+                        <li>右侧数值（护甲加成、幻境耐久、生命数值等）：与目标卡牌的差值 ≤ 3</li>
+                        <li>卡包：与目标卡包相差最多 5 个版本</li>
+                    </ul>
+
+                    <h3>上下箭头的作用：</h3>
+                    <ul>
+                        <li><span class="arrow-up">↑</span>：表示你输入的卡牌的该数值低于目标卡牌，建议下次猜测选择数值更高的卡牌。</li>
+                        <li><span class="arrow-down">↓</span>：表示你输入的卡牌的该数值高于目标卡牌，建议下次猜测选择数值更高的卡牌。</li>
+                    </ul>
+                    <h3>模糊检索功能：</h3>
+                    <p>可以在输入框输入【卡包名称/式神名称】来检索相符的卡牌；</p>
+                </div>
+                <button class="close-help-btn" onclick="closeModal('help-modal')">关闭</button>
+            `;
+
+            // 词条说明
+            tab2Content.innerHTML = `
+                <div class="help-body">
+                    <h3>卡包列表（从旧到新）：</h3>
+                    <p>经典<不夜之火<月夜幻响<沧海刀鸣<吉运缘结<四相琉璃<善恶无明<繁花入梦<浮生方醒<喧哗烩战<空弦绮话<振剑归川<远山遥泽<鸣雷启蛰<燃灯志异<尘世轮回<桃源故里<祝星启明<湮灭双生<千录晴诗<龙渊秘境<星缘百策</p>
+                    <h3>卡牌等级列表（从低到高）：</h3>
+                    <p>无等级（式神卡牌等）<1<2<3</p>
+                    <h3>稀有度列表（从低到高）：</h3>
+                    <p>无稀有度（式神卡牌等）&lt;R&lt;SR&lt;SSR</p>
+                    <h3>左侧数值说明：</h3>
+                    <p>力量加成、力量数值等</p>
+                    <h3>右侧数值说明：</h3>
+                    <p>护甲加成、生命数值、幻境耐久等</p>
+                    <h3>派系说明：</h3>
+                    <p>红莲、紫岩、青岚、苍叶、无派系等</p>
+                </div>
+                <button class="close-help-btn" onclick="closeModal('help-modal')">关闭</button>
+            `;
+
+            modal.style.display = 'flex';
+        }
+
+        // 打开指定标签页
+        function openTab(evt, tabId) {
+            const tabContents = document.getElementsByClassName('tab-content');
+            const tabButtons = document.getElementsByClassName('tab-btn');
+
+            // 隐藏所有标签页内容
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].style.display = 'none';
+            }
+
+            // 移除所有按钮的激活状态
+            for (let i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].className = tabButtons[i].className.replace(' active', '');
+            }
+
+            // 显示当前标签页内容并激活按钮
+            document.getElementById(tabId).style.display = 'block';
+            evt.currentTarget.className += ' active';
+        }
+
+        // 关闭模态框
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.style.display = 'none';
+        }
+
+        // 设置 maxAttempts 的值
+        function setMaxAttempts() {
+            const maxAttemptsInput = document.getElementById('maxAttemptsInput');
+            const newMaxAttempts = parseInt(maxAttemptsInput.value, 10);
+
+            // 确保输入值在 2 到 10 之间
+            if (newMaxAttempts >= 2 && newMaxAttempts <= 10) {
+                maxAttempts = newMaxAttempts;
+                alert(`最大尝试次数已设置为: ${maxAttempts}`);
+            } else {
+                alert('请输入 2 到 10 之间的整数。');
+            }
+        }
+
+        // 初始化时设置进度条
+        function initSlider() {
+            updateSliderProgress();
+        }
+
+        // 增加尝试次数
+        function increaseAttempts() {
+            if (maxAttempts < maxAttemptsLimit) {
+                maxAttempts++;
+                updateAttemptsDisplay();
+            }
+        }
+
+        // 减少尝试次数
+        function decreaseAttempts() {
+            if (maxAttempts > minAttempts) {
+                maxAttempts--;
+                updateAttemptsDisplay();
+            }
+        }
+
+        // 更新显示
+        function updateAttemptsDisplay() {
+            const valueDisplay = document.getElementById('attemptsValue');
+            valueDisplay.textContent = maxAttempts;
+        }
+
+        // 修改restartGameWithNewSettings函数，添加困难模式处理
+        function restartGameWithNewSettings() {
+            // 获取困难模式状态
+            isHardMode = document.getElementById('hard-mode').checked;
+
+            // 如果启用困难模式，禁用所有其他复选框
+            if (isHardMode) {
+                document.getElementById('show-atk-arrow').checked = false;
+                document.getElementById('show-hp-arrow').checked = false;
+                document.getElementById('show-pack-arrow').checked = false;
+                document.getElementById('show-level-arrow').checked = false;
+                document.getElementById('show-rarity-arrow').checked = false;
+
+                // 禁用所有其他复选框
+                document.getElementById('show-atk-arrow').disabled = true;
+                document.getElementById('show-hp-arrow').disabled = true;
+                document.getElementById('show-pack-arrow').disabled = true;
+                document.getElementById('show-level-arrow').disabled = true;
+                document.getElementById('show-rarity-arrow').disabled = true;
+            } else {
+                // 启用所有其他复选框
+                document.getElementById('show-atk-arrow').disabled = false;
+                document.getElementById('show-hp-arrow').disabled = false;
+                document.getElementById('show-pack-arrow').disabled = false;
+                document.getElementById('show-level-arrow').disabled = false;
+                document.getElementById('show-rarity-arrow').disabled = false;
+            }
+
+            // 重置游戏状态
+            attempts = 0;
+            updateStats();
+            const resultTbody = document.getElementById('result-tbody');
+            resultTbody.innerHTML = ''; // 清空结果表格
+            document.getElementById('result').textContent = '';
+            document.getElementById('answer').value = ''; // 清空输入框
+
+            // 隐藏消息框
+            document.getElementById('custom-message-box').style.display = 'none';
+            enableButtons();
+
+            // 重新获取谜题和卡牌名称
+            fetchPuzzleAndNames();
+
+            // 关闭设置模态框
+            closeModal('settings2');
+        }
+
+
+        // 页面加载时初始化
+        window.onload = function() {
+            fetchPuzzleAndNames();
+            updateStats();
+            updateAttemptsDisplay();
+        };
+    </script>
+</body>
+</html>
