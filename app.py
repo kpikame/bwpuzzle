@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, jsonify
 import json
 import random
+import os
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -10,11 +12,24 @@ def submit_bug():
     data = request.json
     bug_report = data.get('bug_report', '')
 
-    # 这里可以添加将bug_report保存到数据库或发送邮件的逻辑
-    # 例如：save_to_database(bug_report)
+    # 获取当前时间戳
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-    print(f"Received bug report: {bug_report}")  # 临时打印到控制台
-    return jsonify({'status': 'success', 'message': 'Bug报告已提交，感谢反馈！'})
+    # 准备要写入的内容
+    log_content = f"[{timestamp}] {bug_report}\n\n"
+
+    # 确保项目目录下存在BUG_REPORT.log文件
+    log_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'BUG_REPORT.log')
+
+    try:
+        # 以追加模式打开文件并写入内容
+        with open(log_file_path, 'a', encoding='utf-8') as log_file:
+            log_file.write(log_content)
+
+        return jsonify({'status': 'success', 'message': 'BUG报告已提交，感谢反馈！(窗口将在3秒后自动关闭)'})
+    except Exception as e:
+        print(f"Error writing to BUG_REPORT.log: {e}")
+        return jsonify({'status': 'error', 'message': '提交失败，请稍后再试！'})
 
 # 加载百闻牌卡牌数据
 def load_card_data():
