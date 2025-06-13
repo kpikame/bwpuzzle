@@ -52,21 +52,6 @@ input:-webkit-autofill {
     border-collapse: collapse; /* 合并边框 */
 }
 
-.custom-message-box {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: none;
-    justify-content: center; /* 恢复为 center 以在水平方向居中 */
-    align-items: flex-start; /* 改为 flex-start 以对齐到顶部 */
-    z-index: 1000;
-    padding-top: 200px; /* 添加一些顶部内边距以避免紧贴边缘 */
-    overflow-y: auto;
-}
-
 .message-content {
     background-color: white;
     padding: 20px;
@@ -269,21 +254,6 @@ button:hover {
     filter: brightness(1.2); /* 图标变亮 */
 }
 
-.settings-message-box {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: none;
-    justify-content: center; /* 恢复为 center 以在水平方向居中 */
-    align-items: flex-start; /* 改为 flex-start 以对齐到顶部 */
-    z-index: 1000;
-    padding-top: 200px; /* 添加一些顶部内边距以避免紧贴边缘 */
-    overflow-y: auto;
-}
-
 .message-content {
     background-color: white;
     padding: 20px;
@@ -298,32 +268,34 @@ button:hover {
 }
 
 /* 模态框背景 */
-.modal {
+.modal, .modal2, .custom-message-box, .settings-message-box {
     display: none;
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     background-color: rgba(0, 0, 0, 0.5);
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     z-index: 1000;
-    align-items: flex-start; /* 改为 flex-start 以对齐到顶部 */
-    padding-top: 150px; /* 添加一些顶部内边距以避免紧贴边缘 */
+    padding: 150px 0; /* 简化padding设置 */
     overflow-y: auto;
+    box-sizing: border-box; /* 确保padding包含在高度内 */
 }
 
 /* 模态框内容 */
-.modal-content {
+.modal-content, .modal2-content {
     background-color: white;
     padding: 15px;
     border-radius: 8px;
     width: 80%;
     max-width: 600px;
+    max-height: calc(100vh - 170px); /* 考虑padding后的最大高度 */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     position: relative;
     overflow-y: auto;
+    margin: 0 auto; /* 确保内容居中 */
 }
 
 /* 关闭按钮 */
@@ -451,35 +423,6 @@ button:hover {
 .help-body ul {
     padding-left: 20px;
     margin-bottom: 3px;
-}
-
-/* 模态框背景 */
-.modal2 {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    align-items: flex-start; /* 改为 flex-start 以对齐到顶部 */
-    padding-top: 150px; /* 添加一些顶部内边距以避免紧贴边缘 */
-    overflow-y: auto;
-}
-
-/* 模态框内容 */
-.modal2-content {
-    font-family: Arial, sans-serif;
-    background-color: white;
-    padding: 15px;
-    border-radius: 8px;
-    width: 80%;
-    max-width: 1000px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    position: relative;
 }
 
 .contributor-title{
@@ -660,32 +603,54 @@ button:hover {
     /* 修改表格行和单元格的布局 */
     #result-table tbody tr {
         display: block;
-        margin-bottom: 1px; /* 缩小行之间的间隔 */
-        border: 0.2px solid #ddd;
-        border-radius: 5px;
+        align-items: center
+        margin-bottom: 10px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
         overflow: hidden;
-        width: 100%; /* 确保行宽度填满父容器 */
+        width: 100%;
+        box-sizing: border-box;
     }
 
     /* 修改表格单元格的布局 */
     #result-table tbody td {
         display: inline-block;
-        justify-content: space-between;
-        padding: 5px 5px;
-        text-align: left;
-        text-overflow: ellipsis;
-        border-bottom: 1px solid #eee;
+        vertical-align: top;
+        padding: 8px;
+        text-align: center;
+        box-sizing: border-box;
+        width: 33.33%; /* 每行显示3个元素 */
+        border-bottom: none;
+        border-right: 1px solid #eee;
         background-color: transparent; /* 清空单元格背景颜色 */
-        //width: 100%; /* 确保单元格宽度填满行 */
-        box-sizing: border-box; /* 确保内边距和边框包含在宽度内 */
+    }
+
+    /* 移除最后一列的右边框 */
+    #result-table tbody td:nth-child(3n) {
+        border-right: none;
+    }
+
+    /* 特殊处理前两个单元格（卡牌名称+式神名称） */
+    #result-table tbody td:nth-child(1),
+    #result-table tbody td:nth-child(2) {
+        width: 50%; /* 首行两个元素各占50%宽度 */
+        border-right: 1px solid #eee;
+    }
+
+    /* 移除首行第二个元素的右边框 */
+    #result-table tbody td:nth-child(2) {
+        border-right: none;
     }
 
     /* 在单元格内容前添加一个自定义的标题 */
     #result-table > tbody > tr > td:not(.sub-table td)::before {
         content: attr(data-label);
+        display: block;
         font-weight: bold;
-        color: #333;
-        margin-right: 1px;
+        color: #666;
+        margin-bottom: 4px;
+        font-size: 0.9em;
+        text-align: center;
     }
 
     /* 为每个单元格设置特定的data-label属性 */
@@ -701,4 +666,28 @@ button:hover {
     #result-table > tbody > tr > td:nth-of-type(10):not(.sub-table td)::before { content: "稀有度"; }
     #result-table > tbody > tr > td:nth-of-type(11):not(.sub-table td)::before { content: "所属卡包"; }
 
+    /* 调整子表格样式以适应移动端 */
+    .sub-table {
+        text-align: center; /* 确保文本居中 */
+        vertical-align: middle; /* 垂直居中 */
+        margin: 0 auto; /* 居中 sub-table */
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .sub-table td {
+        text-align: center; /* 确保文本居中 */
+        vertical-align: middle; /* 垂直居中 */
+        display: block;
+        width: 100% !important;
+        border: 5px !important;
+        padding: 5px !important;
+        margin: 2px !important;
+    }
+
+    /* 图片样式调整 */
+    #result-table tbody td:nth-child(1) img {
+        display: block;
+        margin: 0 auto 5px;
+    }
 }

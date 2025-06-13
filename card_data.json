@@ -305,7 +305,7 @@
         "cardtype": "法术",
         "atkchange": 0,
         "hpchange": 0,
-        "terms": [],
+        "terms": ["抽牌"],
         "level": 2,
         "rarity": "SR",
         "image_path": "static/images/墨染.png",
@@ -604,33 +604,6 @@
         "cardpack": "经典"
     },
     {
-        "id": 83,
-        "name": "致命之羽",
-        "shikigaminames": [
-            "以津真天",
-            "鸩"
-        ],
-        "shikigamipositions": [
-            "单攻",
-            "成长",
-            "破甲"
-        ],
-        "factions": "无派系",
-        "cardtype": "协战",
-        "atkchange": 0,
-        "hpchange": 0,
-        "terms": [
-            "条件",
-            "运势",
-            "鬼火",
-            "抽牌"
-        ],
-        "level": 2,
-        "rarity": "SSR",
-        "image_path": "static/images/致命之羽.png",
-        "cardpack": "经典"
-    },
-    {
         "id": 253,
         "name": "尘缚之阵",
         "shikigaminames": [
@@ -644,7 +617,8 @@
         "cardtype": "形态",
         "atkchange": 5,
         "hpchange": 9,
-        "terms": [],
+        "terms": ["激怒",
+            "免疫"],
         "level": 3,
         "rarity": "R",
         "image_path": "static/images/尘缚之阵.png",
@@ -833,7 +807,6 @@
         "atkchange": 5,
         "hpchange": 5,
         "terms": [
-            "运势"
         ],
         "level": 3,
         "rarity": "SR",
@@ -2655,7 +2628,7 @@
             "控场"
         ],
         "factions": "苍叶",
-        "cardtype": "形态",
+        "cardtype": "法术",
         "atkchange": 1,
         "hpchange": 3,
         "terms": [
@@ -3485,7 +3458,8 @@
         "atkchange": 3,
         "hpchange": 5,
         "terms": [
-            "增强"
+            "增强",
+            "衍生卡"
         ],
         "level": 2,
         "rarity": "R",
@@ -3507,10 +3481,6 @@
         "atkchange": 4,
         "hpchange": 0,
         "terms": [
-            "条件",
-            "运势",
-            "鬼火",
-            "抽牌"
         ],
         "level": 2,
         "rarity": "R",
@@ -3597,7 +3567,8 @@
         "atkchange": 2,
         "hpchange": 5,
         "terms": [
-            "等级"
+            "等级",
+            "衍生卡"
         ],
         "level": "无等级",
         "rarity": "无稀有度",
@@ -3774,7 +3745,7 @@
         "atkchange": 0,
         "hpchange": 0,
         "terms": [
-            "远程",
+            "穿刺",
             "瞬发"
         ],
         "level": 1,
@@ -4974,7 +4945,7 @@
         "factions": "红莲",
         "cardtype": "式神",
         "atkchange": 2,
-        "hpchange": 5,
+        "hpchange": 6,
         "terms": [],
         "level": "无等级",
         "rarity": "无稀有度",
@@ -9184,9 +9155,9 @@
             "解场"
         ],
         "factions": "青岚",
-        "cardtype": "法术",
+        "cardtype": "幻境",
         "atkchange": 0,
-        "hpchange": 0,
+        "hpchange": 1,
         "terms": [
             "瞬发"
         ],
@@ -13759,7 +13730,7 @@
             "派系"
         ],
         "factions": "苍叶",
-        "cardtype": "法术",
+        "cardtype": "战斗",
         "atkchange": 0,
         "hpchange": 0,
         "terms": [
@@ -18652,7 +18623,7 @@
         "factions": "苍叶",
         "cardtype": "式神",
         "atkchange": 2,
-        "hpchange": 4,
+        "hpchange": 3,
         "terms": [
             "召唤/召唤物"
         ],
@@ -23439,8 +23410,8 @@
         ],
         "factions": "苍叶",
         "cardtype": "战斗",
-        "atkchange": 0,
-        "hpchange": 0,
+        "atkchange": 1,
+        "hpchange": 1,
         "terms": [
             "入夜",
             "必杀"
@@ -27286,11 +27257,12 @@
         ],
         "factions": "苍叶",
         "cardtype": "法术",
-        "atkchange": 0,
-        "hpchange": 0,
+        "atkchange": 1,
+        "hpchange": 1,
         "terms": [
             "回复",
-            "剧毒/中毒"
+            "剧毒/中毒",
+            "觉醒"
         ],
         "level": 2,
         "rarity": "SR",
@@ -27634,8 +27606,8 @@
         ],
         "factions": "苍叶",
         "cardtype": "式神",
-        "atkchange": 1,
-        "hpchange": 1,
+        "atkchange": 3,
+        "hpchange": 4,
         "terms": [
             "免疫",
             "剧毒/中毒"
@@ -32053,7 +32025,7 @@
         "terms": [
             "回复"
         ],
-        "level": 3,
+        "level": 2,
         "rarity": "SR",
         "image_path": "static/images/无量.png",
         "cardpack": "尘世轮回"
@@ -37670,7 +37642,7 @@
             "输出"
         ],
         "factions": "红莲",
-        "cardtype": "法术",
+        "cardtype": "式神",
         "atkchange": 3,
         "hpchange": 4,
         "terms": [],
@@ -41948,6 +41920,29 @@
         "level": "无等级",
         "rarity": "无稀有度",
         "image_path": "static/images/铁鼠·豪贾.png",
+        "cardpack": "星缘百策"
+    },
+    {
+        "id": 83,
+        "name": "致命之羽",
+        "shikigaminames": [
+            "以津真天",
+            "鸩"
+        ],
+        "shikigamipositions": [
+            "单攻",
+            "成长",
+            "破甲"
+        ],
+        "factions": "无派系",
+        "cardtype": "协战",
+        "atkchange": 0,
+        "hpchange": 0,
+        "terms": [
+        ],
+        "level": 2,
+        "rarity": "SSR",
+        "image_path": "static/images/致命之羽.png",
         "cardpack": "星缘百策"
     },
     {
